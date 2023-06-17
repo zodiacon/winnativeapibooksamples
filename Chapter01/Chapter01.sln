@@ -5,6 +5,8 @@ VisualStudioVersion = 17.7.33808.371
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloNative", "HelloNative\HelloNative.vcxproj", "{85B22C58-F031-40D8-BB89-0D809FBDF645}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HelloNative2", "HelloNative2\HelloNative2.vcxproj", "{966836FF-59F4-46F7-91CE-78164DDD72F2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{85B22C58-F031-40D8-BB89-0D809FBDF645}.Release|x64.Build.0 = Release|x64
 		{85B22C58-F031-40D8-BB89-0D809FBDF645}.Release|x86.ActiveCfg = Release|Win32
 		{85B22C58-F031-40D8-BB89-0D809FBDF645}.Release|x86.Build.0 = Release|Win32
+		{966836FF-59F4-46F7-91CE-78164DDD72F2}.Debug|x64.ActiveCfg = Debug|x64
+		{966836FF-59F4-46F7-91CE-78164DDD72F2}.Debug|x64.Build.0 = Debug|x64
+		{966836FF-59F4-46F7-91CE-78164DDD72F2}.Debug|x86.ActiveCfg = Debug|Win32
+		{966836FF-59F4-46F7-91CE-78164DDD72F2}.Debug|x86.Build.0 = Debug|Win32
+		{966836FF-59F4-46F7-91CE-78164DDD72F2}.Release|x64.ActiveCfg = Release|x64
+		{966836FF-59F4-46F7-91CE-78164DDD72F2}.Release|x64.Build.0 = Release|x64
+		{966836FF-59F4-46F7-91CE-78164DDD72F2}.Release|x86.ActiveCfg = Release|Win32
+		{966836FF-59F4-46F7-91CE-78164DDD72F2}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
