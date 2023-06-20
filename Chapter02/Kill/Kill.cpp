@@ -8,7 +8,7 @@
 
 #pragma comment(lib, "ntdll")
 
-NTSTATUS KillNative(int pid) {
+NTSTATUS KillNative(ULONG pid) {
 	OBJECT_ATTRIBUTES procAttr = RTL_CONSTANT_OBJECT_ATTRIBUTES(nullptr, 0);
 	CLIENT_ID cid{};	// zero-out structure
 	cid.UniqueProcess = ULongToHandle(pid);
@@ -25,7 +25,7 @@ NTSTATUS KillNative(int pid) {
 //
 // for reference only
 //
-bool KillWin32(int pid) {
+bool KillWin32(ULONG pid) {
 	auto hProcess = OpenProcess(PROCESS_TERMINATE, FALSE, pid);
 	if (!hProcess)
 		return false;
@@ -41,7 +41,7 @@ int main(int argc, const char* argv[]) {
 		return 0;
 	}
 
-	auto pid = strtol(argv[1], nullptr, 0);
+	auto pid = strtoul(argv[1], nullptr, 0);
 
 	auto status = KillNative(pid);
 	if (NT_SUCCESS(status))
