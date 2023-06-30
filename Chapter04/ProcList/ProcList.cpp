@@ -2,6 +2,7 @@
 //
 
 #include "pch.h"
+#include <assert.h>
 
 #pragma comment(lib, "ntdll")
 
@@ -21,11 +22,21 @@ std::wstring TimeSpanToString(LONGLONG ts) {
 		tf.Hour, tf.Minute, tf.Second, tf.Milliseconds);
 }
 
-int main() {
+std::wstring SidToString(PSID sid) {
+	UNICODE_STRING str;
+	if (NT_SUCCESS(RtlConvertSidToUnicodeString(&str, sid, TRUE))) {
+		std::wstring result(str.Buffer, str.Length / sizeof(WCHAR));
+		RtlFreeUnicodeString(&str);
+		return result;
+	}
+	return L"";
+}
+
+void EnumProcesses() {
 	ULONG size = 0;
 	auto status = NtQuerySystemInformation(SystemProcessInformation, nullptr, 0, &size);
 	std::unique_ptr<BYTE[]> buffer;
-	while(status == STATUS_INFO_LENGTH_MISMATCH) {
+	while (status == STATUS_INFO_LENGTH_MISMATCH) {
 		size += 1024;
 		buffer = std::make_unique<BYTE[]>(size);
 		status = NtQuerySystemInformation(SystemProcessInformation, buffer.get(), size, &size);
@@ -33,9 +44,10 @@ int main() {
 
 	auto p = (SYSTEM_PROCESS_INFORMATION*)buffer.get();
 
-	for(;;) {
+	for (;;) {
 		printf("PID: %6u EPROCESS: PPID: %6u T: %4u H: %6u CPU Time: %ws Created: %ws Name: %wZ\n",
-			HandleToULong(p->UniqueProcessId), HandleToULong(p->InheritedFromUniqueProcessId),
+			HandleToULong(p->UniqueProcessId), 
+			HandleToULong(p->InheritedFromUniqueProcessId),
 			p->NumberOfThreads, p->HandleCount,
 			TimeSpanToString(p->UserTime.QuadPart + p->KernelTime.QuadPart).c_str(),
 			TimeToString(p->CreateTime).c_str(), p->ImageName);
@@ -43,6 +55,54 @@ int main() {
 			break;
 		p = (SYSTEM_PROCESS_INFORMATION*)((PBYTE)p + p->NextEntryOffset);
 	}
+}
+
+bool EnumProcessesFull() {
+	//
+	// check if running elevated
+	//
+	if (ULONG elevated, size; 
+		!NT_SUCCESS(NtQueryInformationToken(NtCurrentProcessToken(), TokenElevation, &elevated, sizeof(elevated), &size))
+			|| !elevated)
+		return false;
+
+	ULONG size = 0;
+	auto status = NtQuerySystemInformation(SystemFullProcessInformation, nullptr, 0, &size);
+	std::unique_ptr<BYTE[]> buffer;
+	while (status == STATUS_INFO_LENGTH_MISMATCH) {
+		size += 1024;
+		buffer = std::make_unique<BYTE[]>(size);
+		status = NtQuerySystemInformation(SystemFullProcessInformation, buffer.get(), size, &size);
+	}
+
+	auto p = (SYSTEM_PROCESS_INFORMATION*)buffer.get();
+
+	for (;;) {
+		auto px = (SYSTEM_PROCESS_INFORMATION_EXTENSION*)((PBYTE)p + sizeof(*p) - sizeof(SYSTEM_THREAD_INFORMATION)
+			+ p->NumberOfThreads * sizeof(SYSTEM_EXTENDED_THREAD_INFORMATION));
+		printf("PID: %6u PPID: %6u T: %4u H: %6u Job: %4u CPU Time: %ws Created: %ws SID: %ws Path: %wZ Package: %ws App: %ws\n",
+			HandleToULong(p->UniqueProcessId), HandleToULong(p->InheritedFromUniqueProcessId),
+			p->NumberOfThreads, p->HandleCount,
+			px->JobObjectId,
+			TimeSpanToString(p->UserTime.QuadPart + p->KernelTime.QuadPart).c_str(),
+			TimeToString(p->CreateTime).c_str(), 
+			px->UserSidOffset ? SidToString((PSID)((PBYTE)px + px->UserSidOffset)).c_str() : L"",
+			p->ImageName, 
+			px->PackageFullNameOffset ? (PCWSTR)((PBYTE)px + px->PackageFullNameOffset) : L"",
+			px->AppIdOffset ? (PCWSTR)((PBYTE)px + px->AppIdOffset) : L"");
+
+		assert(!px->HasStrongId || (px->HasStrongId && px->PackageFullNameOffset > 0));
+
+		if (p->NextEntryOffset == 0)
+			break;
+		p = (SYSTEM_PROCESS_INFORMATION*)((PBYTE)p + p->NextEntryOffset);
+	}
+	return true;
+}
+
+int main(int argc, const char* argv[]) {
+	if (!EnumProcessesFull())
+		EnumProcesses();
 
 	return 0;
 }
