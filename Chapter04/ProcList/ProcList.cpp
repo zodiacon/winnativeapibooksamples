@@ -33,14 +33,16 @@ int main() {
 
 	auto p = (SYSTEM_PROCESS_INFORMATION*)buffer.get();
 
-	do {
-		printf("PID: %6u PPID: %6u T: %4u H: %6u CPU Time: %ws Created: %ws Name: %wZ\n",
+	for(;;) {
+		printf("PID: %6u EPROCESS: PPID: %6u T: %4u H: %6u CPU Time: %ws Created: %ws Name: %wZ\n",
 			HandleToULong(p->UniqueProcessId), HandleToULong(p->InheritedFromUniqueProcessId),
 			p->NumberOfThreads, p->HandleCount,
 			TimeSpanToString(p->UserTime.QuadPart + p->KernelTime.QuadPart).c_str(),
 			TimeToString(p->CreateTime).c_str(), p->ImageName);
+		if (p->NextEntryOffset == 0)
+			break;
 		p = (SYSTEM_PROCESS_INFORMATION*)((PBYTE)p + p->NextEntryOffset);
-	} while (p->NextEntryOffset);
+	}
 
 	return 0;
 }
