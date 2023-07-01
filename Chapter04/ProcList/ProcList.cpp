@@ -74,6 +74,8 @@ bool EnumProcessesFull() {
 		buffer = std::make_unique<BYTE[]>(size);
 		status = NtQuerySystemInformation(SystemFullProcessInformation, buffer.get(), size, &size);
 	}
+	if (!NT_SUCCESS(status))
+		return false;
 
 	auto p = (SYSTEM_PROCESS_INFORMATION*)buffer.get();
 
@@ -87,7 +89,7 @@ bool EnumProcessesFull() {
 			TimeSpanToString(p->UserTime.QuadPart + p->KernelTime.QuadPart).c_str(),
 			TimeToString(p->CreateTime).c_str(), 
 			px->UserSidOffset ? SidToString((PSID)((PBYTE)px + px->UserSidOffset)).c_str() : L"",
-			p->ImageName, 
+			&p->ImageName, 
 			px->PackageFullNameOffset ? (PCWSTR)((PBYTE)px + px->PackageFullNameOffset) : L"",
 			px->AppIdOffset ? (PCWSTR)((PBYTE)px + px->AppIdOffset) : L"");
 
