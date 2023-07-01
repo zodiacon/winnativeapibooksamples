@@ -11,7 +11,7 @@ int main() {
 
 	for (auto next = head.Flink; next != &head; next = next->Flink) {
 		auto mod = CONTAINING_RECORD(next, LDR_DATA_TABLE_ENTRY, InLoadOrderLinks);
-		printf("0x%p: %wZ\n", mod->DllBase, mod->BaseDllName);
+		printf("0x%p: %wZ\n", mod->DllBase, &mod->BaseDllName);
 	}
 	return 0;
 }
