@@ -24,7 +24,7 @@ int main() {
 			&type->TypeName, type->NumberOfObjects, type->NumberOfHandles);
 
 		auto obj = (SYSTEM_OBJECT_INFORMATION*)((PBYTE)type + sizeof(*type) + type->TypeName.MaximumLength);
-		for (ULONG i = 0; i < type->NumberOfObjects; i++) {
+		for (;;) {
 			printf("0x%p (%wZ) P: 0x%X H: %u PID: %u EPID: %u\n",
 				obj->Object, &obj->NameInfo, obj->PointerCount, obj->HandleCount,
 				HandleToULong(obj->CreatorUniqueProcess), HandleToULong(obj->ExclusiveProcessId));
