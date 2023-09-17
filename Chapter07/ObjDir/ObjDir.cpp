@@ -23,8 +23,7 @@ std::wstring GetSymbolicLinkTarget(std::wstring const& directory, std::wstring c
 	UNICODE_STRING target;
 	RtlInitUnicodeString(&target, buffer);
 	target.MaximumLength = sizeof(buffer);
-	ULONG len;
-	status = NtQuerySymbolicLinkObject(hLink, &target, &len);
+	status = NtQuerySymbolicLinkObject(hLink, &target, nullptr);
 	NtClose(hLink);
 	return buffer;
 }
