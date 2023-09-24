@@ -67,7 +67,7 @@ bool QueryWS(HANDLE hProcess) {
 
 int main(int argc, const char* argv[]) {
 	if (argc < 2) {
-		printf("Usage: QueryVM <pid>\n");
+		printf("Usage: QueryVS <pid>\n");
 		return 0;
 	}
 
@@ -79,7 +79,9 @@ int main(int argc, const char* argv[]) {
 		return status;
 	}
 
-	QueryWS(hProcess);
+	if (!QueryWS(hProcess))
+		printf("Failed to query working set\n");
+
 	NtClose(hProcess);
 	return 0;
 }
