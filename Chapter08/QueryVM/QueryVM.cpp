@@ -5,6 +5,56 @@
 
 #pragma comment(lib, "ntdll")
 
+//
+// extended with flags not present in phnt
+//
+typedef struct _MEMORY_REGION_INFORMATION_EX {
+	PVOID AllocationBase;
+	ULONG AllocationProtect;
+	union {
+		ULONG RegionType;
+		struct {
+			ULONG Private : 1;
+			ULONG MappedDataFile : 1;
+			ULONG MappedImage : 1;
+			ULONG MappedPageFile : 1;
+			ULONG MappedPhysical : 1;
+			ULONG DirectMapped : 1;
+			ULONG SoftwareEnclave : 1;
+			ULONG PageSize64K : 1;
+			ULONG PlaceholderReservation : 1;
+			ULONG MappedWriteWatch : 1;
+			ULONG PageSizeLarge : 1;
+			ULONG PageSizeHuge : 1;
+			ULONG Reserved : 19;
+		};
+	};
+	SIZE_T RegionSize;
+	SIZE_T CommitSize;
+	ULONG_PTR PartitionId;
+	ULONG_PTR NodePreference;
+} MEMORY_REGION_INFORMATION_EX;
+
+std::wstring MemoryRegionFlagsToString(ULONG flags) {
+	std::wstring result;
+	static PCWSTR text[] = {
+		L"Private", L"Data File", L"Image", L"Page File",
+		L"Physical", L"Direct", L"Enclave", L"64KB Page",
+		L"Placeholder Reserve", L"Write Watch",
+		L"Large Page", L"Huge Page",
+	};
+
+	for(int i = 0; i < _countof(text); i++)
+		if (flags & (1 << i)) {
+			result += text[i];
+			result += L", ";
+		}
+
+	if (!result.empty())
+		return result.substr(0, result.length() - 2);
+	return L"";
+}
+
 const char* StateToString(DWORD state) {
 	switch (state) {
 		case MEM_FREE: return "Free";
@@ -50,18 +100,31 @@ std::string ProtectionToString(DWORD protect) {
 }
 
 std::wstring Details(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mbi) {
+	static auto hProcess2 = INVALID_HANDLE_VALUE;
+	if (hProcess2 == INVALID_HANDLE_VALUE) {
+		if (!NT_SUCCESS(NtDuplicateObject(NtCurrentProcess(), hProcess, NtCurrentProcess(), &hProcess2, PROCESS_QUERY_INFORMATION, 0, 0)))
+			hProcess2 = nullptr;
+	}
+
+	std::wstring details;
+
 	if (mbi.State == MEM_COMMIT) {
-		//
-		// get working set details
-		//
-		static auto hProcess2 = INVALID_HANDLE_VALUE;
-		if (hProcess2 == INVALID_HANDLE_VALUE) {
-			NtDuplicateObject(NtCurrentProcess(), hProcess, NtCurrentProcess(), &hProcess2, PROCESS_QUERY_INFORMATION, 0, 0);
+		MEMORY_REGION_INFORMATION_EX ri;
+		if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, mbi.BaseAddress, MemoryRegionInformationEx, &ri, sizeof(ri), nullptr))) {
+			details += MemoryRegionFlagsToString(ri.RegionType);
 		}
-		if (hProcess2) {
+
+		if (mbi.Type == MEM_MAPPED || mbi.Type == MEM_IMAGE) {
+			BYTE buffer[1 << 10];
+			if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, mbi.BaseAddress, MemoryMappedFilenameInformation, buffer, sizeof(buffer), nullptr))) {
+				auto us = (PUNICODE_STRING)buffer;
+				if (!details.empty())
+					details += L" ";
+				details += std::wstring(us->Buffer, us->Length / sizeof(WCHAR));
+			}
 		}
 	}
-	return L"";
+	return details;
 }
 
 void DisplayMemoryInfo(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mi) {
