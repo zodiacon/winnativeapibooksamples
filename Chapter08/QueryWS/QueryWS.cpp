@@ -2,11 +2,11 @@
 //
 
 #include "pch.h"
+#include <assert.h>
 
 #pragma comment(lib, "ntdll")
 
 const char* ProtectionToString(DWORD protect) {
-
 	switch (protect) {
 		case 1: return "Read Only";
 		case 2: return "Execute";

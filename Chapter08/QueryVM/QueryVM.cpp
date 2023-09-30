@@ -99,6 +99,44 @@ std::string ProtectionToString(DWORD protect) {
 	return text;
 }
 
+std::wstring VirtualAttributesToString(MEMORY_WORKING_SET_EX_BLOCK const& attr) {
+	std::wstring result;
+	result += attr.Valid ? L"(Valid, " : L"(Invalid, ";
+	if (attr.Valid) {
+		result += L"Prot: ";
+		auto prot = ProtectionToString(attr.Win32Protection);
+		result.insert(result.end(), prot.begin(), prot.end());
+		result += L", ";
+		if (attr.Shared) {
+			result += std::format(L"Share: {}, ", attr.ShareCount);
+		}
+		if (attr.Locked)
+			result += L"Locked, ";
+		if (attr.LargePage)
+			result += L"Large, ";
+		result += std::format(L"Node: {}, ", attr.Node);
+		if (attr.Win32GraphicsProtection > 0) {
+			result += L"GfxProt: ";
+			prot = ProtectionToString(attr.Win32GraphicsProtection);
+			result.insert(result.end(), prot.begin(), prot.end());
+			result += L", ";
+		}
+	}
+	else {
+		if (attr.Invalid.PageTable)
+			result += L"PT, ";
+		if (attr.Invalid.ModifiedList)
+			result += L"Modified, ";
+	}
+	result += std::format(L"Pri: {}, ", attr.Priority);
+	if (attr.Bad)
+		result += L"Bad, ";
+	if (attr.SharedOriginal)
+		result += L"Proto, ";
+
+	return result.substr(0, result.length() - 2) + L")";
+}
+
 std::wstring Details(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mbi) {
 	static auto hProcess2 = INVALID_HANDLE_VALUE;
 	if (hProcess2 == INVALID_HANDLE_VALUE) {
@@ -108,6 +146,12 @@ std::wstring Details(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mbi) {
 
 	std::wstring details;
 
+	MEMORY_WORKING_SET_EX_INFORMATION ws;
+	ws.VirtualAddress = mbi.BaseAddress;
+	if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, nullptr, MemoryWorkingSetExInformation, &ws, sizeof(ws), nullptr))) {
+		details += VirtualAttributesToString(ws.u1.VirtualAttributes);
+		details += L" ";
+	}
 	if (mbi.State == MEM_COMMIT) {
 		MEMORY_REGION_INFORMATION_EX ri;
 		if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, mbi.BaseAddress, MemoryRegionInformationEx, &ri, sizeof(ri), nullptr))) {
@@ -128,7 +172,7 @@ std::wstring Details(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mbi) {
 }
 
 void DisplayMemoryInfo(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mi) {
-	printf("%p %16zX %-10s %-8s %-15s %-15s %ws\n",
+	printf("%p %16zX %-10s %-8s %-19s %-19s %ws\n",
 		mi.BaseAddress, mi.RegionSize,
 		StateToString(mi.State), TypeToString(mi.Type),
 		ProtectionToString(mi.Protect).c_str(), ProtectionToString(mi.AllocationProtect).c_str(),
@@ -139,7 +183,7 @@ void QueryVM(HANDLE hProcess) {
 	MEMORY_BASIC_INFORMATION mbi;
 	BYTE* address = nullptr;
 
-	int count = printf("%-16s %-16s %-10s %-8s %-15s %-15s Details\n",
+	int count = printf("%-16s %-16s %-10s %-8s %-19s %-19s Details\n",
 		"Address", "Size", "State", "Type", "Protect", "Alloc Prot");
 	printf("%s\n", std::string(count, '-').c_str());
 
