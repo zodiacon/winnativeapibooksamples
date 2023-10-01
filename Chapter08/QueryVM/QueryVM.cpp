@@ -137,6 +137,26 @@ std::wstring VirtualAttributesToString(MEMORY_WORKING_SET_EX_BLOCK const& attr) 
 	return result.substr(0, result.length() - 2) + L")";
 }
 
+std::wstring SigningLevelToString(int level) {
+	std::wstring text;
+	switch (level) {
+		case SE_SIGNING_LEVEL_UNCHECKED:	text = L"Unchecked"; break;
+		case SE_SIGNING_LEVEL_UNSIGNED:		text = L"Unsigned"; break;
+		case SE_SIGNING_LEVEL_ENTERPRISE:	text = L"Exterprise"; break;
+		case SE_SIGNING_LEVEL_DEVELOPER:	text = L"Developer"; break;
+		case SE_SIGNING_LEVEL_AUTHENTICODE: text = L"Authenticode"; break;
+		case SE_SIGNING_LEVEL_STORE:		text = L"Store"; break;
+		case SE_SIGNING_LEVEL_ANTIMALWARE:	text = L"Antimalware"; break;
+		case SE_SIGNING_LEVEL_MICROSOFT:	text = L"Microsoft"; break;
+		case SE_SIGNING_LEVEL_DYNAMIC_CODEGEN: text = L"Codegen"; break;
+		case SE_SIGNING_LEVEL_WINDOWS:		text = L"Windows"; break;
+		case SE_SIGNING_LEVEL_WINDOWS_TCB:	text = L"WinTCB"; break;
+		default: text = L"Custom"; break;
+	}
+
+	return std::format(L"{} ({})", text, level);
+}
+
 std::wstring Details(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mbi) {
 	static auto hProcess2 = INVALID_HANDLE_VALUE;
 	if (hProcess2 == INVALID_HANDLE_VALUE) {
@@ -150,14 +170,29 @@ std::wstring Details(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mbi) {
 	ws.VirtualAddress = mbi.BaseAddress;
 	if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, nullptr, MemoryWorkingSetExInformation, &ws, sizeof(ws), nullptr))) {
 		details += VirtualAttributesToString(ws.u1.VirtualAttributes);
-		details += L" ";
 	}
+
+	//MEMORY_PHYSICAL_CONTIGUITY_INFORMATION pm{};
+	//pm.VirtualAddress = mbi.BaseAddress;
+	//pm.Size = mbi.RegionSize;
+	//pm.ContiguityUnitSize = 1 << 12;
+	//if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, nullptr, MemoryPhysicalContiguityInformation, &pm, sizeof(pm), nullptr))) {
+	//}
+
 	if (mbi.State == MEM_COMMIT) {
 		MEMORY_REGION_INFORMATION_EX ri;
 		if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, mbi.BaseAddress, MemoryRegionInformationEx, &ri, sizeof(ri), nullptr))) {
 			details += MemoryRegionFlagsToString(ri.RegionType);
 		}
 
+		if (mbi.Type == MEM_IMAGE) {
+			MEMORY_IMAGE_INFORMATION info;
+			if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, mbi.BaseAddress, MemoryImageInformation, &info, sizeof(info), nullptr))) {
+				details += std::format(L" (Image Base: 0x{:X} Size: 0x{:X} {} Sign: {}) ",
+					(SIZE_T)info.ImageBase, info.SizeOfImage, info.ImageNotExecutable ? L"NX" : L"",
+					SigningLevelToString(info.ImageSigningLevel));
+			}
+		}
 		if (mbi.Type == MEM_MAPPED || mbi.Type == MEM_IMAGE) {
 			BYTE buffer[1 << 10];
 			if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, mbi.BaseAddress, MemoryMappedFilenameInformation, buffer, sizeof(buffer), nullptr))) {
@@ -180,6 +215,11 @@ void DisplayMemoryInfo(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mi) {
 }
 
 void QueryVM(HANDLE hProcess) {
+	SIZE_T committed;
+	if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, nullptr, MemorySharedCommitInformation, &committed, sizeof(committed), nullptr))) {
+		printf("Shared commit: %llu KB\n", committed << 2);
+	}
+
 	MEMORY_BASIC_INFORMATION mbi;
 	BYTE* address = nullptr;
 
