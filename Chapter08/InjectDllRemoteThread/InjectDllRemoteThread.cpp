@@ -72,6 +72,6 @@ int wmain(int argc, const wchar_t* argv[]) {
 
 	NtClose(hThread);
 	NtClose(hProcess);
-	return 1;
+	return 0;
 }
 
