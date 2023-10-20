@@ -50,7 +50,7 @@ void EnumProcesses() {
 			HandleToULong(p->InheritedFromUniqueProcessId),
 			p->NumberOfThreads, p->HandleCount,
 			TimeSpanToString(p->UserTime.QuadPart + p->KernelTime.QuadPart).c_str(),
-			TimeToString(p->CreateTime).c_str(), p->ImageName);
+			TimeToString(p->CreateTime).c_str(), &p->ImageName);
 		if (p->NextEntryOffset == 0)
 			break;
 		p = (SYSTEM_PROCESS_INFORMATION*)((PBYTE)p + p->NextEntryOffset);
