@@ -5,6 +5,8 @@ VisualStudioVersion = 17.8.34227.203
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dirx", "dirx\dirx.vcxproj", "{64E71BDC-32F6-4E0B-8DB9-7A785D54A90F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Streams", "Streams\Streams.vcxproj", "{57982D5F-D445-4CD6-A0A1-C8965662268D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{64E71BDC-32F6-4E0B-8DB9-7A785D54A90F}.Release|x64.Build.0 = Release|x64
 		{64E71BDC-32F6-4E0B-8DB9-7A785D54A90F}.Release|x86.ActiveCfg = Release|Win32
 		{64E71BDC-32F6-4E0B-8DB9-7A785D54A90F}.Release|x86.Build.0 = Release|Win32
+		{57982D5F-D445-4CD6-A0A1-C8965662268D}.Debug|x64.ActiveCfg = Debug|x64
+		{57982D5F-D445-4CD6-A0A1-C8965662268D}.Debug|x64.Build.0 = Debug|x64
+		{57982D5F-D445-4CD6-A0A1-C8965662268D}.Debug|x86.ActiveCfg = Debug|Win32
+		{57982D5F-D445-4CD6-A0A1-C8965662268D}.Debug|x86.Build.0 = Debug|Win32
+		{57982D5F-D445-4CD6-A0A1-C8965662268D}.Release|x64.ActiveCfg = Release|x64
+		{57982D5F-D445-4CD6-A0A1-C8965662268D}.Release|x64.Build.0 = Release|x64
+		{57982D5F-D445-4CD6-A0A1-C8965662268D}.Release|x86.ActiveCfg = Release|Win32
+		{57982D5F-D445-4CD6-A0A1-C8965662268D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
