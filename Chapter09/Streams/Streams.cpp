@@ -3,7 +3,6 @@
 
 #include "pch.h"
 
-
 #pragma comment(lib, "ntdll")
 
 NTSTATUS EnumStreams(PCWSTR filename) {
