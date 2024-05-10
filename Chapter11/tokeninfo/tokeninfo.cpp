@@ -15,7 +15,7 @@ int main(int argc, const char* argv[]) {
 	auto id = argc > 1 ? atoi(argv[1]) : 0;
 
 	if (id == 0 && argc > 1) {
-		printf("Usage: tokeninfo [pid | tid | -1]\n");
+		printf("Usage: tokeninfo [pid [<-h handle>] | tid | -1]\n");
 		return 1;
 	}
 
@@ -43,8 +43,22 @@ int main(int argc, const char* argv[]) {
 		CLIENT_ID cid{ ULongToHandle(id) };
 		status = NtOpenProcess(&hObject, PROCESS_QUERY_LIMITED_INFORMATION, &procAttr, &cid);
 		if (NT_SUCCESS(status)) {
-			printf("Opening token for process %u\n", id);
-			status = NtOpenProcessToken(hObject, TOKEN_QUERY, &hToken);
+			//
+			// check if a handle is provided
+			//
+			if (argc > 3 && _stricmp(argv[2], "-h") == 0) {
+				auto handle = strtol(argv[3], nullptr, 0);
+				NtClose(hObject);
+				hObject = nullptr;
+				status = NtOpenProcess(&hObject, PROCESS_DUP_HANDLE, &procAttr, &cid);
+				if (NT_SUCCESS(status)) {
+					status = NtDuplicateObject(hObject, ULongToHandle(handle), NtCurrentProcess(), &hToken, TOKEN_QUERY, 0, 0);
+				}
+			}
+			else {
+				printf("Opening token for process %u\n", id);
+				status = NtOpenProcessToken(hObject, TOKEN_QUERY, &hToken);
+			}
 		}
 		else if (status != STATUS_ACCESS_DENIED) {
 			cid.UniqueProcess = nullptr;
