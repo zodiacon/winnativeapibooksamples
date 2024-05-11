@@ -12,10 +12,10 @@ DWORD WINAPI DoNothing() {
 }
 
 int main(int argc, const char* argv[]) {
-	auto id = argc > 1 ? atoi(argv[1]) : 0;
+	auto id = argc > 1 ? strtol(argv[1], nullptr, 0) : 0;
 
 	if (id == 0 && argc > 1) {
-		printf("Usage: tokeninfo [pid [<-h handle>] | tid | -1]\n");
+		printf("Usage: tokeninfo [pid [-h handle] | tid | -1]\n");
 		return 1;
 	}
 
@@ -226,13 +226,21 @@ void DisplayTokenInfo(HANDLE hToken) {
 	BYTE buffer[1 << 12];
 	TOKEN_STATISTICS stats;
 
-	if (::GetTokenInformation(hToken, TokenUser, buffer, sizeof(buffer), &len)) {
+	if (NT_SUCCESS(NtQueryInformationToken(hToken, TokenUser, buffer, sizeof(buffer), &len))) {
 		auto data = (TOKEN_USER*)buffer;
 		printf("User SID: %ws\n", SidToString(data->User.Sid).c_str());
 		printf("Username: %ws\n\n", GetUserNameFromSid(data->User.Sid).c_str());
 	}
 
-	if (::GetTokenInformation(hToken, TokenStatistics, &stats, sizeof(stats), &len)) {
+	HANDLE hDup;
+	if (NT_SUCCESS(NtDuplicateObject(NtCurrentProcess(), hToken, NtCurrentProcess(), &hDup, TOKEN_QUERY_SOURCE, 0, 0))) {
+		TOKEN_SOURCE source;
+		if (NT_SUCCESS(NtQueryInformationToken(hDup, TokenSource, &source, sizeof(source), &len))) {
+			printf("Source: %s (0x%X:%08X)\n", source.SourceName, source.SourceIdentifier.HighPart, source.SourceIdentifier.LowPart);
+		}
+		NtClose(hDup);
+	}
+	if (NT_SUCCESS(NtQueryInformationToken(hToken, TokenStatistics, &stats, sizeof(stats), &len))) {
 		printf("Token ID: 0x%08llX\n", LuidToNum(stats.TokenId));
 		printf("Logon Session ID: 0x%08llX\n", LuidToNum(stats.AuthenticationId));
 		printf("Token Type: %s\n", stats.TokenType == TokenPrimary ? "Primary" : "Impersonation");
