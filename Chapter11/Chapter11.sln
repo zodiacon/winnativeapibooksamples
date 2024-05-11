@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.34607.79
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tokeninfo", "tokeninfo\tokeninfo.vcxproj", "{0DA2B7FF-ECCC-40D3-B73B-84D2DF5C0FB3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CreateToken", "CreateToken\CreateToken.vcxproj", "{8D55A278-1077-485A-A7CC-AFF0D4687923}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{0DA2B7FF-ECCC-40D3-B73B-84D2DF5C0FB3}.Release|x64.Build.0 = Release|x64
 		{0DA2B7FF-ECCC-40D3-B73B-84D2DF5C0FB3}.Release|x86.ActiveCfg = Release|Win32
 		{0DA2B7FF-ECCC-40D3-B73B-84D2DF5C0FB3}.Release|x86.Build.0 = Release|Win32
+		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Debug|x64.ActiveCfg = Debug|x64
+		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Debug|x64.Build.0 = Debug|x64
+		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Debug|x86.ActiveCfg = Debug|Win32
+		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Debug|x86.Build.0 = Debug|Win32
+		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Release|x64.ActiveCfg = Release|x64
+		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Release|x64.Build.0 = Release|x64
+		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Release|x86.ActiveCfg = Release|Win32
+		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
