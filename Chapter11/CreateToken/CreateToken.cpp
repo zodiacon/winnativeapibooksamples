@@ -1,7 +1,9 @@
 // CreateToken.cpp : This file contains the 'main' function. Program execution begins and ends there.
 //
 
+
 #include <phnt_windows.h>
+#define PHNT_VERSION PHNT_THRESHOLD
 #include <phnt.h>
 #include <assert.h>
 #include <stdio.h>
@@ -35,14 +37,14 @@ void DisplaySid(PSID sid) {
 }
 
 HANDLE FindLsass() {
-	HANDLE hProcess = nullptr, hOld;
-	BYTE buffer[256];
 	WCHAR path[MAX_PATH];
 	GetSystemDirectory(path, ARRAYSIZE(path));
 	wcscat_s(path, L"\\lsass.exe");
 	UNICODE_STRING lsassPath;
 	RtlInitUnicodeString(&lsassPath, path);
 
+	BYTE buffer[256];
+	HANDLE hProcess = nullptr, hOld;
 	while (true) {
 		hOld = hProcess;
 		auto status = NtGetNextProcess(hProcess, PROCESS_QUERY_LIMITED_INFORMATION, 0, 0, &hProcess);
@@ -95,34 +97,27 @@ int main() {
 		return 1;
 	}
 
-	LUID authenticationId = RtlConvertUlongToLuid(999);
-	union Sid {
-		BYTE buffer[SECURITY_MAX_SID_SIZE];
-		SID Sid;
-	};
-	WCHAR domain[32];
-	DWORD ldomain = ARRAYSIZE(domain);
-	Sid systemSid;
+	SE_SID systemSid;
 	DWORD size = sizeof(systemSid);
 	CreateWellKnownSid(WinLocalSystemSid, nullptr, &systemSid, &size);
 	DisplaySid(&systemSid);
 
-	Sid adminSid;
+	SE_SID adminSid;
 	size = sizeof(adminSid);
 	CreateWellKnownSid(WinBuiltinAdministratorsSid, nullptr, &adminSid, &size);
 	DisplaySid(&adminSid);
 
-	Sid allUsersSid;
+	SE_SID allUsersSid;
 	size = sizeof(allUsersSid);
 	CreateWellKnownSid(WinWorldSid, nullptr, &allUsersSid, &size);
 	DisplaySid(&allUsersSid);
 
-	Sid interactiveSid;
+	SE_SID interactiveSid;
 	size = sizeof(interactiveSid);
 	CreateWellKnownSid(WinInteractiveSid, nullptr, &interactiveSid, &size);
 	DisplaySid(&interactiveSid);
 
-	Sid authUsers;
+	SE_SID authUsers;
 	size = sizeof(authUsers);
 	CreateWellKnownSid(WinAuthenticatedUserSid, nullptr, &authUsers, &size);
 	DisplaySid(&authUsers);
@@ -132,12 +127,8 @@ int main() {
 	status = RtlAllocateAndInitializeSid(&auth, 1, SECURITY_MANDATORY_MEDIUM_RID, 0, 0, 0, 0, 0, 0, 0, &integritySid);
 	assert(SUCCEEDED(status));
 
-	TOKEN_USER user{};
-	user.User.Sid = &systemSid;
-	TOKEN_SOURCE source{ "Ch11", 777 };
-
 	//
-	// set up privileges
+	// set up groups
 	//
 	MultiGroups<6> groups;
 	groups.Groups[0].Sid = &adminSid;
@@ -163,7 +154,9 @@ int main() {
 
 	TOKEN_PRIMARY_GROUP primary;
 	primary.PrimaryGroup = &adminSid;
-	LARGE_INTEGER expire{};
+
+	TOKEN_USER user{};
+	user.User.Sid = &systemSid;
 
 	//
 	// impersonate
@@ -174,14 +167,15 @@ int main() {
 		return status;
 	}
 
+	LUID authenticationId = RtlConvertUlongToLuid(999);
+	TOKEN_SOURCE source{ "Ch11", 777 };
+	LARGE_INTEGER expire{};
 	HANDLE hToken;
 	status = NtCreateToken(&hToken, TOKEN_ALL_ACCESS, nullptr, TokenPrimary,
 		&authenticationId, &expire, &user, &groups, &privs, nullptr, &primary, nullptr, &source);
 
 	if (NT_SUCCESS(status)) {
 		printf("Token created successfully.\n");
-		ULONG session, len;
-		NtQueryInformationToken(hToken, TokenSessionId, &session, sizeof(session), &len);
 		if (NT_SUCCESS(RtlAdjustPrivilege(SE_TCB_PRIVILEGE, TRUE, TRUE, &enabled))) {
 			ULONG session = WTSGetActiveConsoleSessionId();
 			NtQueryInformationProcess(NtCurrentProcess(), ProcessSessionInformation, &session, sizeof(session), nullptr);
@@ -190,7 +184,7 @@ int main() {
 		STARTUPINFO si{ sizeof(si) };
 		PROCESS_INFORMATION pi;
 		WCHAR desktop[] = L"winsta0\\Default";
-		WCHAR name[MAX_PATH] = L"notepad.exe";
+		WCHAR name[] = L"notepad.exe";
 		si.lpDesktop = desktop;
 
 		status = RtlAdjustPrivilege(SE_ASSIGNPRIMARYTOKEN_PRIVILEGE, TRUE, TRUE, &enabled);
