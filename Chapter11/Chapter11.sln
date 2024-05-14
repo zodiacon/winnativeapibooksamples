@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tokeninfo", "tokeninfo\toke
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CreateToken", "CreateToken\CreateToken.vcxproj", "{8D55A278-1077-485A-A7CC-AFF0D4687923}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sd", "sd\sd.vcxproj", "{6A87BC66-45E8-459D-830E-843712DE43DE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Release|x64.Build.0 = Release|x64
 		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Release|x86.ActiveCfg = Release|Win32
 		{8D55A278-1077-485A-A7CC-AFF0D4687923}.Release|x86.Build.0 = Release|Win32
+		{6A87BC66-45E8-459D-830E-843712DE43DE}.Debug|x64.ActiveCfg = Debug|x64
+		{6A87BC66-45E8-459D-830E-843712DE43DE}.Debug|x64.Build.0 = Debug|x64
+		{6A87BC66-45E8-459D-830E-843712DE43DE}.Debug|x86.ActiveCfg = Debug|Win32
+		{6A87BC66-45E8-459D-830E-843712DE43DE}.Debug|x86.Build.0 = Debug|Win32
+		{6A87BC66-45E8-459D-830E-843712DE43DE}.Release|x64.ActiveCfg = Release|x64
+		{6A87BC66-45E8-459D-830E-843712DE43DE}.Release|x64.Build.0 = Release|x64
+		{6A87BC66-45E8-459D-830E-843712DE43DE}.Release|x86.ActiveCfg = Release|Win32
+		{6A87BC66-45E8-459D-830E-843712DE43DE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
