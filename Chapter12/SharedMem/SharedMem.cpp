@@ -32,9 +32,10 @@ int main() {
 	RtlInitUnicodeString(&secName, fullSecName.c_str());
 	InitializeObjectAttributes(&secAttr, &secName, OBJ_OPENIF, nullptr, nullptr);
 	LARGE_INTEGER size;
-	size.QuadPart = 1 << 12;
+	size.QuadPart = 1 << 13;	// 8KB
 
-	auto status = NtCreateSection(&hSection, SECTION_ALL_ACCESS, &secAttr, &size, PAGE_READWRITE, SEC_COMMIT, nullptr);
+	auto status = NtCreateSection(&hSection, SECTION_ALL_ACCESS, 
+		&secAttr, &size, PAGE_READWRITE, SEC_COMMIT, nullptr);
 	if (!NT_SUCCESS(status)) {
 		printf("Failed to create/open section (0x%X)\n", status);
 		return status;
@@ -50,7 +51,8 @@ int main() {
 
 	PVOID address = nullptr;
 	SIZE_T viewSize = 0;
-	status = NtMapViewOfSection(hSection, NtCurrentProcess(), &address, 0, 0, nullptr, &viewSize, ViewUnmap, 0, PAGE_READWRITE);
+	status = NtMapViewOfSection(hSection, NtCurrentProcess(), &address, 
+		0, 0, nullptr, &viewSize, ViewUnmap, 0, PAGE_READWRITE);
 	if (!NT_SUCCESS(status)) {
 		printf("Failed to map section (0x%X)\n", status);
 		return status;
