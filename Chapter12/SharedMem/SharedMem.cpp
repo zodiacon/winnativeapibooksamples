@@ -2,6 +2,8 @@
 //
 
 #include <phnt_windows.h>
+#define PHNT_VERSION PHNT_REDSTONE5
+
 #include <phnt.h>
 #include <stdio.h>
 #include <string>
