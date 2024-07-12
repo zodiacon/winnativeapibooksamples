@@ -16,16 +16,16 @@ int main() {
 			break;
 	}
 
+	//
+	// weirdly enough, the last entry with NextOffset of zero is not valid
+	//
 	auto mod = (RTL_PROCESS_MODULE_INFORMATION_EX*)buffer.get();
-	for (;;) {
+	while (mod->NextOffset) {
 		printf("Name: %s (%s) Base: 0x%p Checksum: 0x%08X Size: 0x%X\n",
 			mod->BaseInfo.FullPathName + mod->BaseInfo.OffsetToFileName,
-			mod->BaseInfo.FullPathName, 
+			mod->BaseInfo.FullPathName,
 			mod->BaseInfo.ImageBase, mod->ImageChecksum,
 			mod->BaseInfo.ImageSize);
-
-		if (mod->NextOffset == 0)
-			break;
 
 		mod = (RTL_PROCESS_MODULE_INFORMATION_EX*)((PBYTE)mod + mod->NextOffset);
 	}
