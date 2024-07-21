@@ -6,7 +6,7 @@
 #pragma comment(lib, "ntdll")
 
 struct Message : PORT_MESSAGE {
-	char Text[100];
+	char Text[64];
 };
 
 void Delay(int seconds) {
@@ -30,7 +30,7 @@ int main() {
 		Delay(1);
 	}
 	if(!NT_SUCCESS(status))
-		return 1;
+		return status;
 
 	printf("Client port connected: 0x%p\n", hPort);
 	LARGE_INTEGER time;
@@ -44,7 +44,7 @@ int main() {
 		sprintf_s(msg.Text, "The Time is %02d:%02d:%02d.%03d",
 			tf.Hour, tf.Minute, tf.Second, tf.Milliseconds);
 		msg.u1.s1.DataLength = sizeof(msg.Text);
-		msg.u1.s1.TotalLength = msg.u1.s1.DataLength + sizeof(PORT_MESSAGE);
+		msg.u1.s1.TotalLength = sizeof(msg);
 
 		Message reply;
 		SIZE_T msgLen = sizeof(reply);
@@ -54,6 +54,7 @@ int main() {
 			printf("NtAlpcSendWaitReceivePort failed: 0x%X\n", status);
 			break;
 		}
+
 		printf("Sent message %s.\n", msg.Text);
 		printf("Received reply from PID: %u TID: %u\n", 
 			HandleToULong(reply.ClientId.UniqueProcess), 

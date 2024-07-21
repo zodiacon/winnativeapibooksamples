@@ -15,14 +15,29 @@ int Error(NTSTATUS status) {
 
 int wmain(int argc, const wchar_t* argv[]) {
 	if (argc < 2) {
-		printf("Usage: nativerun [-d] <executable> [arguments...]\n");
+		printf("Usage: nativerun [-d] [-s] <executable> [arguments...]\n");
 		return 0;
 	}
 
 	int start = 1;
-	bool debug = _wcsicmp(argv[1], L"-d") == 0;
-	if (debug)
-		start = 2;
+	bool debug = false;
+	bool suspended = false;
+	for (int i = 0; i < 2; i++) {
+		if (!debug) {
+			debug = _wcsicmp(argv[start], L"-d") == 0;
+			if (debug) {
+				start++;
+				continue;
+			}
+		}
+		if (!suspended) {
+			suspended = _wcsicmp(argv[start], L"-s") == 0;
+			if (suspended) {
+				start++;
+				continue;
+			}
+		}
+	}
 
 	//
 	// build command line arguments
@@ -52,14 +67,17 @@ int wmain(int argc, const wchar_t* argv[]) {
 	RtlDestroyProcessParameters(params);
 
 	auto pid = HandleToULong(info.ClientId.UniqueProcess);
-	printf("Process 0x%X (%u) created successfully.\n", pid, pid);
 
 	if (debug) {
 		printf("Attach with a debugger. Press ENTER to resume thread...\n");
 		char dummy[3];
 		gets_s(dummy);
 	}
-	ResumeThread(info.ThreadHandle);
+	if (!suspended) {
+		ResumeThread(info.ThreadHandle);
+	}
+	printf("Process 0x%X (%u) created successfully%s.\n", pid, pid,
+		suspended ? " (Suspended)" : "");
 	CloseHandle(info.ThreadHandle);
 	CloseHandle(info.ProcessHandle);
 
