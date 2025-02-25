@@ -38,7 +38,7 @@ NTSTATUS GetObjectName(HANDLE h, DWORD pid, std::wstring& name, bool file) {
 			//
 			HANDLE hThread;
 			status = NtCreateThreadEx(&hThread, THREAD_ALL_ACCESS, &procAttr, NtCurrentProcess(),
-				(PTHREAD_START_ROUTINE)[](auto param) -> DWORD {
+				(PUSER_THREAD_START_ROUTINE)[](auto param) -> NTSTATUS {
 					auto h = (HANDLE)param;
 					auto status = NtQueryObject(h, ObjectNameInformation, buffer, sizeof(buffer), nullptr);
 					return status;
@@ -98,11 +98,11 @@ std::wstring const& GetObjectTypeName(USHORT index) {
 void DisplayHandle(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX const& h) {
 	auto const& type = GetObjectTypeName(h.ObjectTypeIndex);
 	printf("PID: %6u H: 0x%X Access: 0x%08X Att: %s Address: 0x%p Type: %ws",
-		(ULONG)h.UniqueProcessId, (ULONG)h.HandleValue, h.GrantedAccess,
+		HandleToULong(h.UniqueProcessId), HandleToULong(h.HandleValue), h.GrantedAccess,
 		HandleAttributesToString(h.HandleAttributes).c_str(),
 		h.Object, type.c_str());
 	std::wstring name;
-	auto status = GetObjectName(ULongToHandle((ULONG)h.HandleValue), (ULONG)h.UniqueProcessId, name, type == L"File");
+	auto status = GetObjectName(h.HandleValue, HandleToULong(h.UniqueProcessId), name, type == L"File");
 	if (NT_SUCCESS(status) && !name.empty())
 		printf(" Name: %ws\n", name.c_str());
 	else if (status == STATUS_ACCESS_DENIED)
@@ -129,7 +129,7 @@ void EnumHandles(DWORD pid, PCWSTR type) {
 	auto p = (SYSTEM_HANDLE_INFORMATION_EX*)buffer.get();
 	for (ULONG_PTR i = 0; i < p->NumberOfHandles; i++) {
 		auto& h = p->Handles[i];
-		if (pid && h.UniqueProcessId != pid)
+		if (pid && HandleToULong(h.UniqueProcessId) != pid)
 			continue;
 		if (type && _wcsicmp(type, GetObjectTypeName(h.ObjectTypeIndex).c_str()) != 0)
 			continue;
