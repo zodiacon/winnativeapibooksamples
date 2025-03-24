@@ -71,14 +71,11 @@ bool IsPrime(int i) {
 
 NTSTATUS NTAPI CalcPrimesThread(PVOID p) {
 	PrimeData* data = (PrimeData*)p;
-	int* pPrimes = nullptr;
 	int from = data->From, to = data->To;
 	int count = 0;
 	for (int i = from; i <= to; i++) {
 		if (IsPrime(i)) {
 			count++;
-			pPrimes = (int*)realloc(pPrimes, count * sizeof(int));
-			*(pPrimes + count - 1) = i;
 		}
 	}
 
