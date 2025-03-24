@@ -77,8 +77,6 @@ NTSTATUS NTAPI CalcPrimesThread(PVOID p) {
 	for (int i = from; i <= to; i++) {
 		if (IsPrime(i)) {
 			count++;
-			pPrimes = (int*)realloc(pPrimes, count * sizeof(int));
-			*(pPrimes + count - 1) = i;
 		}
 	}
 
