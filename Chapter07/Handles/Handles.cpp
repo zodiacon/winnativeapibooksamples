@@ -104,10 +104,10 @@ std::wstring GetObjectName(HANDLE hObject, ULONG pid, USHORT type) {
 }
 
 void DisplayHandleInfo(SYSTEM_HANDLE_TABLE_ENTRY_INFO_EX const& info) {
-	printf("H: 0x%06zX PID: %6zu Obj: 0x%p Type: %2d Access: 0x%08X Attr: 0x%02X Name: %ws\n",
-		info.HandleValue, info.UniqueProcessId, info.Object,
+	printf("H: 0x%06X PID: %6u Obj: 0x%p Type: %2d Access: 0x%08X Attr: 0x%02X Name: %ws\n",
+		HandleToULong(info.HandleValue), HandleToULong(info.UniqueProcessId), info.Object,
 		info.ObjectTypeIndex, info.GrantedAccess, info.HandleAttributes,
-		GetObjectName((HANDLE)info.HandleValue, (ULONG)info.UniqueProcessId, info.ObjectTypeIndex).c_str());
+		GetObjectName(info.HandleValue, HandleToULong(info.UniqueProcessId), info.ObjectTypeIndex).c_str());
 }
 
 USHORT GetFileObjectTypeIndex() {

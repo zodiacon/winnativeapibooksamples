@@ -15,7 +15,6 @@ struct PrimeData {
 
 int CalculatePrimes(int from, int to, int threads);
 NTSTATUS NTAPI CalcPrimesThread(PVOID p);
-int CalculatePrimesModern(int from, int to);
 
 int main(int argc, const char* argv[]) {
 	int threads = 1;
@@ -61,16 +60,16 @@ int CalculatePrimes(int from, int to, int threads) {
 	return count;
 }
 
-bool IsPrime(int i) {
-	int limit = (int)sqrt(i);
+bool IsPrime(int n) {
+	int limit = (int)sqrt(n);
 	for (int j = 2; j <= limit; j++)
-		if (i % j == 0)
+		if (n % j == 0)
 			return false;
 	return true;
 }
 
 NTSTATUS NTAPI CalcPrimesThread(PVOID p) {
-	PrimeData* data = (PrimeData*)p;
+	auto data = (PrimeData*)p;
 	int from = data->From, to = data->To;
 	int count = 0;
 	for (int i = from; i <= to; i++) {

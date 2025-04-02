@@ -15,7 +15,7 @@ int main() {
 		//
 		auto type = (OBJECT_TYPE_INFORMATION*)((PBYTE)types + sizeof(PVOID));
 		for (ULONG i = 0; i < types->NumberOfTypes; i++) {
-			printf("%-33wZ (%2d) O: %7u H: %7u PO: %7u PH: %7u\n",
+			printf("%-33wZ (%2d) O: %7luH: %7lu PO: %7lu PH: %7lu\n",
 				&type->TypeName, type->TypeIndex,
 				type->TotalNumberOfObjects, type->TotalNumberOfHandles,
 				type->HighWaterNumberOfObjects, type->HighWaterNumberOfHandles);
@@ -28,7 +28,8 @@ int main() {
 			//
 			type = (OBJECT_TYPE_INFORMATION*)(((ULONG_PTR)temp + sizeof(PVOID) - 1) / sizeof(PVOID) * sizeof(PVOID));
 		}
-		printf("Total Types: %u\n", types->NumberOfTypes);
+        printf("Total Types: %lu\n", types->NumberOfTypes);
 	}
 	return 0;
 }
+
