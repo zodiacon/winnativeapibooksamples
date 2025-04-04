@@ -169,7 +169,7 @@ std::wstring Details(HANDLE hProcess, MEMORY_BASIC_INFORMATION const& mbi) {
 	MEMORY_WORKING_SET_EX_INFORMATION ws;
 	ws.VirtualAddress = mbi.BaseAddress;
 	if (NT_SUCCESS(NtQueryVirtualMemory(hProcess, nullptr, MemoryWorkingSetExInformation, &ws, sizeof(ws), nullptr))) {
-		details += VirtualAttributesToString(ws.u1.VirtualAttributes);
+		details += VirtualAttributesToString(ws.VirtualAttributes);
 	}
 
 	//MEMORY_PHYSICAL_CONTIGUITY_INFORMATION pm{};

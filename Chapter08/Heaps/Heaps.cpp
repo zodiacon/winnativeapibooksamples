@@ -5,6 +5,15 @@
 
 #pragma comment(lib, "ntdll")
 
+
+#define HEAP_RANGE_TYPE_COMMITTED 1
+#define HEAP_RANGE_TYPE_RESERVED  2
+
+#define HEAP_BLOCK_BUSY              1
+#define HEAP_BLOCK_EXTRA_INFORMATION 2
+#define HEAP_BLOCK_LARGE_BLOCK       4
+#define HEAP_BLOCK_LFH_BLOCK         8
+
 typedef enum _HEAP_INFORMATION_LEVEL {
 	HEAP_INFORMATION_LEVEL_PROCESS = 1,
 	HEAP_INFORMATION_LEVEL_HEAP = 2,
@@ -18,39 +27,6 @@ typedef enum _HEAP_INFORMATION_LEVEL {
 	HEAP_INFORMATION_LEVEL_STACK_CONTROL = 0x10000000,
 	HEAP_INFORMATION_LEVEL_INTERNAL_PROCESS_INFO = 0x08000000,
 } HEAP_INFORMATION_LEVEL;
-
-typedef struct _HEAP_REGION_INFORMATION {
-	ULONG_PTR Address;
-	SIZE_T ReserveSize;
-	SIZE_T CommitSize;
-	ULONG_PTR FirstRangeInformationOffset;
-	ULONG_PTR NextRegionInformationOffset;
-} HEAP_REGION_INFORMATION, * PHEAP_REGION_INFORMATION;
-
-#define HEAP_RANGE_TYPE_COMMITTED 1
-#define HEAP_RANGE_TYPE_RESERVED  2
-
-typedef struct _HEAP_RANGE_INFORMATION {
-	ULONG_PTR Address;
-	SIZE_T Size;
-	ULONG Type;
-	ULONG Protection;
-	ULONG_PTR FirstBlockInformationOffset;
-	ULONG_PTR NextRangeInformationOffset;
-} HEAP_RANGE_INFORMATION, * PHEAP_RANGE_INFORMATION;
-
-#define HEAP_BLOCK_BUSY              1
-#define HEAP_BLOCK_EXTRA_INFORMATION 2
-#define HEAP_BLOCK_LARGE_BLOCK       4
-#define HEAP_BLOCK_LFH_BLOCK         8
-
-typedef struct _HEAP_BLOCK_INFORMATION {
-	ULONG_PTR Address;
-	ULONG Flags;    // see flags above
-	SIZE_T DataSize;
-	SIZE_T OverheadSize;
-	ULONG_PTR NextBlockInformationOffset;
-} HEAP_BLOCK_INFORMATION, * PHEAP_BLOCK_INFORMATION;
 
 const char* RangeTypeToString(ULONG type) {
 	switch (type) {
@@ -162,7 +138,7 @@ bool DumpHeaps(HANDLE hProcess, ULONG level) {
 	for (;;) {
 		buffer = std::make_unique<BYTE[]>(size);
 		info = (HEAP_EXTENDED_INFORMATION*)buffer.get();
-		info->Process = hProcess;
+		info->ProcessHandle = hProcess;
 		info->Level = level;
 		status = RtlQueryHeapInformation(nullptr, (HEAP_INFORMATION_CLASS)HeapExtendedInformation, buffer.get(), size, &len);
 		if (NT_SUCCESS(status))
@@ -178,12 +154,12 @@ bool DumpHeaps(HANDLE hProcess, ULONG level) {
 
 	auto hi = (HEAP_INFORMATION*)(buffer.get() + info->ProcessHeapInformation.FirstHeapInformationOffset);
 	auto heaps = info->ProcessHeapInformation.NumberOfHeaps;
-	printf("Total heaps: %u Commit: 0x%zX Reserved: 0x%zX\n",
+	printf("Total heaps: %lu Commit: 0x%zX Reserved: 0x%zX\n",
 		heaps, info->ProcessHeapInformation.CommitSize, info->ProcessHeapInformation.ReserveSize);
 
 	for (ULONG i = 0; i < heaps; i++) {
 		printf("Heap %2d: Addr: 0x%p Commit: 0x%08zX Reserve: 0x%08zX %s\n", i + 1,
-			(PVOID)hi->Address, hi->CommitSize, hi->ReserveSize, hi->Mode ? "(LFH)" : "");
+			hi->Address, hi->CommitSize, hi->ReserveSize, hi->Mode ? "(LFH)" : "");
 		DisplayRegions(buffer.get(), hi);
 		hi = (HEAP_INFORMATION*)(buffer.get() + hi->NextHeapInformationOffset);
 	}
