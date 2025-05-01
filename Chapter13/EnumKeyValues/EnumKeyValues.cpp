@@ -3,9 +3,9 @@
 #include <stdio.h>
 #include <memory>
 #include <string>
+#include <utility>
 
 #pragma comment(lib, "ntdll")
-
 
 PCSTR RegistryTypeToString(DWORD type) {
 	switch (type) {
@@ -55,7 +55,7 @@ void DisplayData(KEY_VALUE_FULL_INFORMATION const* info) {
 		case REG_FULL_RESOURCE_DESCRIPTOR:
 		case REG_RESOURCE_LIST:
 		case REG_RESOURCE_REQUIREMENTS_LIST:
-			auto len = min(64, info->DataLength);
+			auto len = std::min(64ul, info->DataLength);
 			for (DWORD i = 0; i < len; i++) {
 				printf("%02X ", p[i]);
 			}

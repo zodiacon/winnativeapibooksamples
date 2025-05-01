@@ -34,18 +34,18 @@ void DisplayInfo(HANDLE hKey) {
 		}
 		printf("Subkeys: %u\n", info->SubKeys);
 		printf("Values: %u\n", info->Values);
-		printf("Max class length: %u\n", info->MaxClassLen);
-		printf("Max name length: %u\n", info->MaxNameLen);
-		printf("Max value name length: %u\n", info->MaxValueNameLen);
-		printf("Max data length: %u\n", info->MaxValueDataLen);
+		printf("Max class length: %u\n", info->MaxClassLength);
+		printf("Max name length: %u\n", info->MaxNameLength);
+		printf("Max value name length: %u\n", info->MaxValueNameLength);
+		printf("Max data length: %u\n", info->MaxValueDataLength);
 	}
 	else if (NT_SUCCESS(NtQueryKey(hKey, KeyCachedInformation, buffer, sizeof(buffer), &len))) {
 		auto info = (KEY_CACHED_INFORMATION*)buffer;
 		printf("Subkeys: %u\n", info->SubKeys);
 		printf("Values: %u\n", info->Values);
-		printf("Max name length: %u\n", info->MaxNameLen);
-		printf("Max value name length: %u\n", info->MaxValueNameLen);
-		printf("Max data length: %u\n", info->MaxValueDataLen);
+		printf("Max name length: %u\n", info->MaxNameLength);
+		printf("Max value name length: %u\n", info->MaxValueNameLength);
+		printf("Max data length: %u\n", info->MaxValueDataLength);
 	}
 	if (NT_SUCCESS(NtQueryKey(hKey, KeyFlagsInformation, buffer, sizeof(buffer), &len))) {
 		auto info = (KEY_FLAGS_INFORMATION*)buffer;
