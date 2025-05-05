@@ -12,7 +12,6 @@ std::string FormatTime(LARGE_INTEGER& dt) {
 	RtlTimeToTimeFields(&dt, &tf);
 	return std::format("{:04}/{:02}/{:02} {:02}:{:02}:{:02}.{:03}",
 		tf.Year, tf.Month, tf.Day, tf.Hour, tf.Minute, tf.Second, tf.Milliseconds);
-
 }
 
 void DisplayInfo(HANDLE hKey) {
@@ -20,7 +19,7 @@ void DisplayInfo(HANDLE hKey) {
 	ULONG len;
 	if (NT_SUCCESS(NtQueryKey(hKey, KeyNameInformation, buffer, sizeof(buffer), &len))) {
 		auto info = (KEY_NAME_INFORMATION*)buffer;
-		printf("Full Name: %ws\n", std::wstring(info->Name, info->NameLength / sizeof(WCHAR)).c_str());
+		printf("Full Name: %S\n", std::wstring(info->Name, info->NameLength / sizeof(WCHAR)).c_str());
 	}
 	if (NT_SUCCESS(NtQueryKey(hKey, KeyBasicInformation, buffer, sizeof(buffer), &len))) {
 		auto info = (KEY_BASIC_INFORMATION*)buffer;

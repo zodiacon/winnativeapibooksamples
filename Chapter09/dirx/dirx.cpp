@@ -7,7 +7,7 @@
 
 std::wstring TimeToString(LARGE_INTEGER const& t) {
     SYSTEMTIME st;
-    ::FileTimeToSystemTime((const FILETIME*)&t, &st);
+    FileTimeToSystemTime((const FILETIME*)&t, &st);
     WCHAR buffer[64];
     GetDateFormatEx(LOCALE_NAME_USER_DEFAULT, DATE_SHORTDATE, &st, nullptr, buffer, sizeof(buffer), nullptr);
     WCHAR buffer2[64];
@@ -79,8 +79,7 @@ NTSTATUS ListDirectory(PCWSTR path, PCWSTR filter = nullptr) {
             printf("\n");
             if (info->NextEntryOffset == 0)
                 break;
-            info = (FILE_DIRECTORY_INFORMATION*)((BYTE*)info +
-                info->NextEntryOffset);
+            info = (FILE_DIRECTORY_INFORMATION*)((BYTE*)info + info->NextEntryOffset);
         }
     }
 
