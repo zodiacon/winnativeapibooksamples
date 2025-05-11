@@ -99,7 +99,7 @@ void DisplaySD(const PSECURITY_DESCRIPTOR sd) {
 	SECURITY_DESCRIPTOR_CONTROL control;
 	DWORD revision;
 	if (NT_SUCCESS(RtlGetControlSecurityDescriptor(sd, &control, &revision))) {
-		printf("Revision: %u Control: 0x%X (%s)\n", revision,
+		printf("Revision: %lu Control: 0x%lX (%s)\n", revision,
 			control, SDControlToString(control).c_str());
 	}
 	PSID sid;
@@ -257,7 +257,7 @@ int wmain(int argc, const wchar_t* argv[]) {
 		OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION, 
 		buffer, sizeof(buffer), &needed);
 	if (!NT_SUCCESS(status)) {
-		printf("No security descriptor available (0x%X)\n", status);
+		printf("No security descriptor available (0x%lX)\n", status);
 	}
 	else {
 		DisplaySD((PSECURITY_DESCRIPTOR)buffer);
